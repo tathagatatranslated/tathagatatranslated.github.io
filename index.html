@@ -4,7 +4,7 @@
 		<script type="text/javascript">
 			var sitemap = {
 				l: "Translating Tathagata",
-				t: "This website is ... (second commit)",
+				t: "This website is… (TODO)",
 				c: [
 					{
 						l: "Books",
@@ -59,7 +59,7 @@
 					let text_source_url = v.t_url
 					let children = v.c
 					let li = document.createElement("li")
-					var html = "<span>"
+					var html = "<div style='white-space: pre-wrap;'>"
 					html += label
 					if (typeof embedded_text !== 'undefined' && embedded_text) {
 						html += embedded_text
@@ -70,11 +70,15 @@
 						if (xhr.status != 200) {
 							alert("Error loading " + text_source_url);
 						} else {
-							html += xhr.responseText;
+							var finalHTML = xhr.responseText
+							if (text_source_url.indexOf(".txt") != -1) {
+
+							}
+							html += finalHTML;
 							// TODO: format this ... if it ends in .txt, ... if it ends in .md ……
 						}
 					}
-					html += "</span>"
+					html += "</div>"
 					li.innerHTML = html
 					if (typeof children !== 'undefined' && children && children.length > 0) {
 						render(children, li);
