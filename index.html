@@ -72,7 +72,11 @@
 						} else {
 							var finalHTML = xhr.responseText
 							if (text_source_url.indexOf(".txt") != -1) {
-
+								finalHTML = finalHTML.replace(/&/g, "&amp;")
+									.replace(/</g, "&lt;")
+									.replace(/>/g, "&gt;")
+									.replace(/"/g, "&quot;")
+									.replace(/'/g, "&#039;");
 							}
 							html += finalHTML;
 							// TODO: format this ... if it ends in .txt, ... if it ends in .md ……
