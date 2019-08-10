@@ -12,6 +12,14 @@
 							{
 								l: "Lamentation",
 								t_url: "https://raw.githubusercontent.com/TranslatingTathagata/Translations/master/Books%20-%20Lamentation/Lamentation%20-%20English%20-%20translated%20by%20J_lee_77777.txt"
+							},
+							{
+								l: "Lonely Struggle - Introduction",
+								t_url: "https://raw.githubusercontent.com/TranslatingTathagata/Translations/master/Books%20-%20Lonely%20Struggle/Lonely%20Struggle%20-%20Introduction%20-%20English%20translation%20by%20JL.txt"
+							},
+							{
+								l: "Lonely Struggle - Ch. 30",
+								t_url: "https://raw.githubusercontent.com/TranslatingTathagata/Translations/master/Books%20-%20Lonely%20Struggle/Lonely%20Struggle%20-%20Ch%2030%20and%20Epilogue%20-%20English%20translated%20by%20JL.txt"
 							}
 						]
 					},
@@ -40,14 +48,10 @@
 					}
 				]
 			};
-			function render(obj_children, parent_orNil)
+			var content_div;
+			function render(obj_children, parent)
 			{
-				var parent = parent_orNil;
-				if (typeof parent_orNil === 'undefined' || !parent_orNil) {
-					parent = document.body
-				}
 				let ul = document.createElement("ul")
-				console.log("parent" , parent)
 				parent.appendChild(ul)
 				if (typeof obj_children === 'undefined' || !obj_children || obj_children.length <= 0) {
 					throw "Expected render() to be called with non-empty obj.c list"
@@ -59,40 +63,72 @@
 					let text_source_url = v.t_url
 					let children = v.c
 					let li = document.createElement("li")
-					var html = "<div style='white-space: pre-wrap;'>"
-					html += label
+					let a = document.createElement("a")
+					a.href = "#"
 					if (typeof embedded_text !== 'undefined' && embedded_text) {
-						html += embedded_text
+						a.setAttribute("embedded_text", embedded_text)
 					} else if (typeof text_source_url !== 'undefined' && text_source_url) {
-						var xhr = new XMLHttpRequest();
-					    xhr.open('GET', text_source_url, false);
-					    xhr.send();
-						if (xhr.status != 200) {
-							alert("Error loading " + text_source_url);
-						} else {
-							var finalHTML = xhr.responseText
-							if (text_source_url.indexOf(".txt") != -1) {
-								finalHTML = finalHTML.replace(/&/g, "&amp;")
-									.replace(/</g, "&lt;")
-									.replace(/>/g, "&gt;")
-									.replace(/"/g, "&quot;")
-									.replace(/'/g, "&#039;");
-							}
-							html += finalHTML;
-							// TODO: format this ... if it ends in .txt, ... if it ends in .md ……
-						}
+						a.setAttribute("text_source_url", text_source_url)
 					}
-					html += "</div>"
-					li.innerHTML = html
+					a.onclick = function(e)
+					{
+						e.preventDefault()
+						loadAndRenderFromClicked(this)
+						return false
+					}
+					a.innerHTML = label
+					li.appendChild(a)
 					if (typeof children !== 'undefined' && children && children.length > 0) {
 						render(children, li);
 					}
 					ul.appendChild(li)
 				}
 			}
+			function loadAndRenderFromClicked(a)
+			{
+				//
+				const embedded_text = a.getAttribute("embedded_text")
+				const text_source_url = a.getAttribute("text_source_url")
+				//
+				function _renderInnerHTML(innerHTML)
+				{
+					content_div.innerHTML = "<div style='white-space: pre-wrap;'>" + innerHTML + "</div>";
+				}
+				if (typeof embedded_text !== 'undefined' && embedded_text) {
+					_renderInnerHTML(embedded_text)
+				} else if (typeof text_source_url !== 'undefined' && text_source_url) {
+					_renderInnerHTML("Loading…")
+					fetch(text_source_url).then(function(response) {
+						response.text().then(function(text)
+						{
+							var finalHTML = text
+							if (text_source_url.indexOf(".txt") != -1) {
+								finalHTML = finalHTML.replace(/&/g, "&amp;")
+									.replace(/</g, "&lt;")
+									.replace(/>/g, "&gt;")
+									.replace(/"/g, "&quot;")
+									.replace(/'/g, "&#039;");
+							} else if (text_source_url.indexOf(".md") != -1) {
+								// TODO: format…
+							}
+							_renderInnerHTML(finalHTML);
+						}).catch(function() {
+							_renderInnerHTML("Error loading " + text_source_url);
+						})
+					})
+				} else {
+					_renderInnerHTML("Error: Unhandled case")
+				}
+			}
 			const dom_loaded = function()
 			{
-				render([ sitemap ], null);
+				mainNav_ul = document.createElement("ul")
+				document.body.appendChild(mainNav_ul)
+				//
+				content_div = document.createElement("div")
+				document.body.appendChild(content_div)
+				//
+				render([ sitemap ], mainNav_ul);
 			};
 			if (document.readyState === "complete" || (document.readyState !== "loading" && !document.documentElement.doScroll)) {
 				dom_loaded();
